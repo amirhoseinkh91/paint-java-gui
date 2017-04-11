@@ -15,7 +15,7 @@ public class PersonManager {
 
 	// Database credentials
 	static final String USER = "root";
-	static final String PASS = "amir";
+	static final String PASS = "David021 Erfan";
 
 	// ==============================================
 	/*

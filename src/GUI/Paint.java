@@ -1,8 +1,16 @@
 package GUI;
 
+import java.awt.AWTException;
+
+
+import java.awt.*;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Graphics;
+import java.awt.MouseInfo;
+import java.awt.Point;
+import java.awt.PointerInfo;
+import java.awt.Robot;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -12,21 +20,23 @@ import entityManagers.ShapeManager;
 import shape.Circle;
 import shape.Line;
 import shape.Rectangle;
-import shape.Shape;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.image.BufferedImage;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.awt.SystemColor;
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
+import javax.swing.Timer;
 import javax.swing.JScrollBar;
 
 public class Paint extends JFrame {
@@ -36,11 +46,22 @@ public class Paint extends JFrame {
 	private Color color = Color.BLACK;
 	private String shapeType = "Line";
 	final private int idPerson;
-	private boolean select;
-	List<Shape> shapes = new ArrayList<>();
-	private JButton btnZoomin;
-	JButton btnZoomout;
+	
 	double factor = 0.5;
+	//JButton JButton btnCircle
+	
+	//////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////
+	//my change
+	private javax.swing.JButton btnLine;
+	private javax.swing.JButton btnRectangle;
+	private javax.swing.JButton btnCircle;
+
+	
 
 	// ===============================================
 	private JPanel contentPane;
@@ -63,7 +84,7 @@ public class Paint extends JFrame {
 		contentPane.setLayout(null);
 
 		// select shape buttons
-		JButton btnLine = new JButton("خط");
+		this.btnLine = new JButton("خط");
 		btnLine.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				setShapeType("Line");
@@ -72,7 +93,7 @@ public class Paint extends JFrame {
 		btnLine.setBounds(551, 70, 99, 25);
 		contentPane.add(btnLine);
 
-		JButton btnCircle = new JButton("دایره");
+		this.btnCircle = new JButton("دایره");
 		btnCircle.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				setShapeType("Circle");
@@ -81,7 +102,7 @@ public class Paint extends JFrame {
 		btnCircle.setBounds(551, 120, 99, 25);
 		contentPane.add(btnCircle);
 
-		JButton btnRectangle = new JButton("مستطیل");
+		this.btnRectangle = new JButton("مستطیل");
 		btnRectangle.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				setShapeType("Rectangle");
@@ -168,11 +189,6 @@ public class Paint extends JFrame {
 				setInitFinialCoordiantes(x_1, x_2, y_1, y_2);
 				painting();
 			}
-
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				changeColor(e);
-			}
 		});
 
 		panel.setBounds(0, -21, 500, 500);
@@ -197,7 +213,7 @@ public class Paint extends JFrame {
 				});
 			}
 		});
-		btnExit.setBounds(551, 490, 117, 25);
+		btnExit.setBounds(551, 469, 117, 25);
 		contentPane.add(btnExit);
 
 		JButton btnLastshapes = new JButton("شکل‌های قبل");
@@ -206,41 +222,39 @@ public class Paint extends JFrame {
 				drawExistShapes(idPerson);
 			}
 		});
-		btnLastshapes.setBounds(551, 454, 117, 25);
+		btnLastshapes.setBounds(551, 432, 117, 25);
 		btnLastshapes.setToolTipText("نمایش شکل‌های قبل شما");
 		contentPane.add(btnLastshapes);
 
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(0, 480, 500, 20);
-		contentPane.add(scrollPane);
-
-		JScrollBar scrollBar_1 = new JScrollBar();
-		scrollBar_1.setOrientation(JScrollBar.HORIZONTAL);
-		scrollPane.setViewportView(scrollBar_1);
-
-		JScrollPane scrollPane_1 = new JScrollPane();
-		scrollPane_1.setBounds(500, 0, 20, 500);
-		contentPane.add(scrollPane_1);
-
-		JScrollBar scrollBar = new JScrollBar();
-		scrollPane_1.setViewportView(scrollBar);
-
-		btnZoomin = new JButton("+");
-		btnZoomin.setBounds(612, 412, 44, 25);
-		contentPane.add(btnZoomin);
-
-		btnZoomout = new JButton("-");
-		btnZoomout.setBounds(562, 412, 44, 25);
-		contentPane.add(btnZoomout);
-
+		
 		JButton btnSelect = new JButton("انتخاب");
 		btnSelect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				select();
+				Graphics g = getGraphics();
+				java.awt.Rectangle l = g.getClipBounds();
+				int x1 = (int) l.getX();
+				int y1 = (int) l.getY();
+				int x2 = (int) l.getWidth() - x1;
+				int y2 = (int) l.getHeight() - y1;
+				System.out.println(x1 + "," + x2 + "," + y1 + "," + y2);
+				 
 			}
 		});
 		btnSelect.setBounds(552, 375, 117, 25);
 		contentPane.add(btnSelect);
+		
+		JButton btnZoom = new JButton("zoom");
+		//btnZoom.setBounds(551, 412, 70, 25);
+		contentPane.add(btnZoom);
+		
+		btnZoom.setText("Zoom");
+		btnZoom.setBounds(551, 403,117 , 25);
+		btnZoom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                zoomButtonActionPerformed(evt);
+            }
+        });
+		
 
 	} // end Paint(idPerson) constructor
 
@@ -257,25 +271,21 @@ public class Paint extends JFrame {
 	/*
 	 * set initial and final coordinates
 	 */
+	
+	private void setAllButtonEnable() {
+		btnLine.setEnabled(true);
+		btnCircle.setEnabled(true);
+        btnRectangle.setEnabled(true);
+    }
+	
+	 private void zoomButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomButtonActionPerformed
 
-	private void select() {
-		this.select = true;
-	}
-
-	private void changeColor(MouseEvent e) {
-		x1 = e.getX();
-		y1 = e.getY();
-		if (select) {
-
-			for (int i = 0; i < shapes.size(); i++) {
-				if (shapes.get(i).containShape(x1, y1)) {
-					shapes.get(i).setColor(color);
-					bPaint.changeColor(shapes.get(i));
-					break;
-				}
-			}
-			repaint();
-		}
+	        zoomOptionPane();
+	        setAllButtonEnable();
+	    }//GEN-LAST:event_zoomButtonActio
+	
+	private void select(){
+		
 	}
 
 	private void setInitFinialCoordiantes(int x1, int x2, int y1, int y2) {
@@ -324,7 +334,42 @@ public class Paint extends JFrame {
 			l.draw(g);
 		}
 	}
+	
+	
+	public void zoomOptionPane() {
 
+        Robot robot = null;
+        try {
+            robot = new Robot();
+        } catch (AWTException ex) {
+            Logger.getLogger(this.getClass().getName())
+                    .log(Level.SEVERE, null, ex);
+        }
+
+        final int size = 256;
+        final BufferedImage bi = new BufferedImage(
+                size, size, BufferedImage.TYPE_INT_RGB);
+        final JLabel gui = new JLabel(new ImageIcon(bi));
+        final Robot finalRobot = robot;
+        ActionListener zoomListener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                PointerInfo pi = MouseInfo.getPointerInfo();
+                Point p = pi.getLocation();
+                BufferedImage temp = finalRobot.createScreenCapture(new java.awt.Rectangle(p.x - (size / 4), p.y - (size / 4),
+                        (size / 2), (size / 2)));
+                Graphics g = bi.getGraphics();
+                g.drawImage(temp, 0, 0, size, size, null);
+                g.dispose();
+                gui.repaint();
+            }
+        };
+        Timer t = new Timer(40, zoomListener);
+        t.start();
+
+        JOptionPane.showMessageDialog(null, gui);
+    }
 	/*
 	 * Test
 	 */
@@ -347,16 +392,12 @@ public class Paint extends JFrame {
 		Graphics g = getGraphics();
 		for (int i = 0; i < lines.length; i++) {
 			lines[i].draw(g);
-			shapes.add(lines[i]);
 		}
 		for (int i = 0; i < circles.length; i++) {
 			circles[i].draw(g);
-			shapes.add(circles[i]);
 		}
 		for (int i = 0; i < rectangles.length; i++) {
 			rectangles[i].draw(g);
-			shapes.add(rectangles[i]);
 		}
 	}
-
 }
