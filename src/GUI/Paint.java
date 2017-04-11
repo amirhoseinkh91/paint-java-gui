@@ -12,6 +12,7 @@ import entityManagers.ShapeManager;
 import shape.Circle;
 import shape.Line;
 import shape.Rectangle;
+import shape.Shape;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -20,6 +21,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.awt.SystemColor;
 import javax.swing.ButtonGroup;
 import javax.swing.JScrollPane;
@@ -32,6 +36,8 @@ public class Paint extends JFrame {
 	private Color color = Color.BLACK;
 	private String shapeType = "Line";
 	final private int idPerson;
+	private boolean select;
+	List<Shape> shapes = new ArrayList<>();
 	private JButton btnZoomin;
 	JButton btnZoomout;
 	double factor = 0.5;
@@ -162,6 +168,11 @@ public class Paint extends JFrame {
 				setInitFinialCoordiantes(x_1, x_2, y_1, y_2);
 				painting();
 			}
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				changeColor(e);
+			}
 		});
 
 		panel.setBounds(0, -21, 500, 500);
@@ -221,18 +232,11 @@ public class Paint extends JFrame {
 		btnZoomout = new JButton("-");
 		btnZoomout.setBounds(562, 412, 44, 25);
 		contentPane.add(btnZoomout);
-		
+
 		JButton btnSelect = new JButton("انتخاب");
 		btnSelect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Graphics g = getGraphics();
-				java.awt.Rectangle l = g.getClipBounds();
-				int x1 = (int) l.getX();
-				int y1 = (int) l.getY();
-				int x2 = (int) l.getWidth() - x1;
-				int y2 = (int) l.getHeight() - y1;
-				System.out.println(x1 + "," + x2 + "," + y1 + "," + y2);
-				 
+				select();
 			}
 		});
 		btnSelect.setBounds(552, 375, 117, 25);
@@ -253,10 +257,25 @@ public class Paint extends JFrame {
 	/*
 	 * set initial and final coordinates
 	 */
-	
-	
-	private void select(){
-		
+
+	private void select() {
+		this.select = true;
+	}
+
+	private void changeColor(MouseEvent e) {
+		x1 = e.getX();
+		y1 = e.getY();
+		if (select) {
+
+			for (int i = 0; i < shapes.size(); i++) {
+				if (shapes.get(i).containShape(x1, y1)) {
+					shapes.get(i).setColor(color);
+					bPaint.changeColor(shapes.get(i));
+					break;
+				}
+			}
+			repaint();
+		}
 	}
 
 	private void setInitFinialCoordiantes(int x1, int x2, int y1, int y2) {
@@ -328,12 +347,16 @@ public class Paint extends JFrame {
 		Graphics g = getGraphics();
 		for (int i = 0; i < lines.length; i++) {
 			lines[i].draw(g);
+			shapes.add(lines[i]);
 		}
 		for (int i = 0; i < circles.length; i++) {
 			circles[i].draw(g);
+			shapes.add(circles[i]);
 		}
 		for (int i = 0; i < rectangles.length; i++) {
 			rectangles[i].draw(g);
+			shapes.add(rectangles[i]);
 		}
 	}
+
 }
