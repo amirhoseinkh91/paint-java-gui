@@ -90,6 +90,11 @@ public class Shape extends JFrame {
 	public  void draw(Graphics g){
 		
 	}
+	
+	public boolean containShape(double x, double y){
+		return true;
+	}
+	
 
 	// set coordiantes for draw in reverse direction
 	protected void setCoordinates() {
