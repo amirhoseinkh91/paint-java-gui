@@ -1,16 +1,8 @@
 package GUI;
 
-import java.awt.AWTException;
-
-
-import java.awt.*;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Graphics;
-import java.awt.MouseInfo;
-import java.awt.Point;
-import java.awt.PointerInfo;
-import java.awt.Robot;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -20,23 +12,21 @@ import entityManagers.ShapeManager;
 import shape.Circle;
 import shape.Line;
 import shape.Rectangle;
+import shape.Shape;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.awt.SystemColor;
 import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
-import javax.swing.Timer;
 import javax.swing.JScrollBar;
 
 public class Paint extends JFrame {
@@ -44,24 +34,17 @@ public class Paint extends JFrame {
 	private int x1, x2, y1, y2;
 	JPanel panel;
 	private Color color = Color.BLACK;
+	public Color getColor() {
+		return color;
+	}
+
 	private String shapeType = "Line";
 	final private int idPerson;
-	
+	private boolean select;
+	List<Shape> shapes = new ArrayList<>();
+	private JButton btnZoomin;
+	JButton btnZoomout;
 	double factor = 0.5;
-	//JButton JButton btnCircle
-	
-	//////////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////
-	///////////////////////////////////////////////////////////////
-	//////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////
-	//my change
-	private javax.swing.JButton btnLine;
-	private javax.swing.JButton btnRectangle;
-	private javax.swing.JButton btnCircle;
-
-	
 
 	// ===============================================
 	private JPanel contentPane;
@@ -84,7 +67,7 @@ public class Paint extends JFrame {
 		contentPane.setLayout(null);
 
 		// select shape buttons
-		this.btnLine = new JButton("خط");
+		JButton btnLine = new JButton("خط");
 		btnLine.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				setShapeType("Line");
@@ -93,7 +76,7 @@ public class Paint extends JFrame {
 		btnLine.setBounds(551, 70, 99, 25);
 		contentPane.add(btnLine);
 
-		this.btnCircle = new JButton("دایره");
+		JButton btnCircle = new JButton("دایره");
 		btnCircle.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				setShapeType("Circle");
@@ -102,7 +85,7 @@ public class Paint extends JFrame {
 		btnCircle.setBounds(551, 120, 99, 25);
 		contentPane.add(btnCircle);
 
-		this.btnRectangle = new JButton("مستطیل");
+		JButton btnRectangle = new JButton("مستطیل");
 		btnRectangle.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				setShapeType("Rectangle");
@@ -180,6 +163,7 @@ public class Paint extends JFrame {
 			public void mousePressed(MouseEvent e) {
 				x_1 = e.getX();
 				y_1 = e.getY();
+				changeColor(e);
 			}
 
 			@Override
@@ -189,6 +173,11 @@ public class Paint extends JFrame {
 				setInitFinialCoordiantes(x_1, x_2, y_1, y_2);
 				painting();
 			}
+
+//			@Override
+//			public void mouseClicked(MouseEvent e) {
+//				changeColor(e);
+//			}
 		});
 
 		panel.setBounds(0, -21, 500, 500);
@@ -213,7 +202,7 @@ public class Paint extends JFrame {
 				});
 			}
 		});
-		btnExit.setBounds(551, 469, 117, 25);
+		btnExit.setBounds(551, 490, 117, 25);
 		contentPane.add(btnExit);
 
 		JButton btnLastshapes = new JButton("شکل‌های قبل");
@@ -222,39 +211,26 @@ public class Paint extends JFrame {
 				drawExistShapes(idPerson);
 			}
 		});
-		btnLastshapes.setBounds(551, 432, 117, 25);
+		btnLastshapes.setBounds(551, 454, 117, 25);
 		btnLastshapes.setToolTipText("نمایش شکل‌های قبل شما");
 		contentPane.add(btnLastshapes);
 
-		
+		btnZoomin = new JButton("+");
+		btnZoomin.setBounds(612, 412, 44, 25);
+		contentPane.add(btnZoomin);
+
+		btnZoomout = new JButton("-");
+		btnZoomout.setBounds(562, 412, 44, 25);
+		contentPane.add(btnZoomout);
+
 		JButton btnSelect = new JButton("انتخاب");
 		btnSelect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				Graphics g = getGraphics();
-				java.awt.Rectangle l = g.getClipBounds();
-				int x1 = (int) l.getX();
-				int y1 = (int) l.getY();
-				int x2 = (int) l.getWidth() - x1;
-				int y2 = (int) l.getHeight() - y1;
-				System.out.println(x1 + "," + x2 + "," + y1 + "," + y2);
-				 
+				select();
 			}
 		});
 		btnSelect.setBounds(552, 375, 117, 25);
 		contentPane.add(btnSelect);
-		
-		JButton btnZoom = new JButton("zoom");
-		//btnZoom.setBounds(551, 412, 70, 25);
-		contentPane.add(btnZoom);
-		
-		btnZoom.setText("Zoom");
-		btnZoom.setBounds(551, 403,117 , 25);
-		btnZoom.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                zoomButtonActionPerformed(evt);
-            }
-        });
-		
 
 	} // end Paint(idPerson) constructor
 
@@ -271,21 +247,24 @@ public class Paint extends JFrame {
 	/*
 	 * set initial and final coordinates
 	 */
-	
-	private void setAllButtonEnable() {
-		btnLine.setEnabled(true);
-		btnCircle.setEnabled(true);
-        btnRectangle.setEnabled(true);
-    }
-	
-	 private void zoomButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomButtonActionPerformed
 
-	        zoomOptionPane();
-	        setAllButtonEnable();
-	    }//GEN-LAST:event_zoomButtonActio
-	
-	private void select(){
-		
+	private void select() {
+		this.select = true;
+		this.shapeType = "";
+	}
+
+	private void changeColor(MouseEvent e) {
+		x1 = e.getX();
+		y1 = e.getY();
+		if (select) {
+			for (int i = 0; i < shapes.size(); i++) {
+				if (shapes.get(i).containShape(x1, y1)) {
+					shapes.get(i).setColor(getColor());
+					ShapeManager.changeColor(idPerson, shapes.get(i));
+					 break;
+				}
+			}
+		}
 	}
 
 	private void setInitFinialCoordiantes(int x1, int x2, int y1, int y2) {
@@ -322,54 +301,22 @@ public class Paint extends JFrame {
 
 		if (shapeType.equals("Rectangle")) {
 			Rectangle r = new Rectangle(x1, x2, y1, y2, color, idPerson, shapeType);
+			shapes.add(r);
 			ShapeManager.addRectangle(r);
 			r.draw(g);
 		} else if (shapeType.equals("Circle")) {
 			Circle c = new Circle(x1, x2, y1, y2, color, idPerson, shapeType);
+			shapes.add(c);
 			ShapeManager.addCircle(c);
 			c.draw(g);
 		} else if (shapeType.equals("Line")) {
 			Line l = new Line(x1, x2, y1, y2, color, idPerson, shapeType);
+			shapes.add(l);
 			ShapeManager.addLine(l);
 			l.draw(g);
 		}
 	}
-	
-	
-	public void zoomOptionPane() {
 
-        Robot robot = null;
-        try {
-            robot = new Robot();
-        } catch (AWTException ex) {
-            Logger.getLogger(this.getClass().getName())
-                    .log(Level.SEVERE, null, ex);
-        }
-
-        final int size = 256;
-        final BufferedImage bi = new BufferedImage(
-                size, size, BufferedImage.TYPE_INT_RGB);
-        final JLabel gui = new JLabel(new ImageIcon(bi));
-        final Robot finalRobot = robot;
-        ActionListener zoomListener = new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                PointerInfo pi = MouseInfo.getPointerInfo();
-                Point p = pi.getLocation();
-                BufferedImage temp = finalRobot.createScreenCapture(new java.awt.Rectangle(p.x - (size / 4), p.y - (size / 4),
-                        (size / 2), (size / 2)));
-                Graphics g = bi.getGraphics();
-                g.drawImage(temp, 0, 0, size, size, null);
-                g.dispose();
-                gui.repaint();
-            }
-        };
-        Timer t = new Timer(40, zoomListener);
-        t.start();
-
-        JOptionPane.showMessageDialog(null, gui);
-    }
 	/*
 	 * Test
 	 */
@@ -392,12 +339,16 @@ public class Paint extends JFrame {
 		Graphics g = getGraphics();
 		for (int i = 0; i < lines.length; i++) {
 			lines[i].draw(g);
+			shapes.add(lines[i]);
 		}
 		for (int i = 0; i < circles.length; i++) {
 			circles[i].draw(g);
+			shapes.add(circles[i]);
 		}
 		for (int i = 0; i < rectangles.length; i++) {
 			rectangles[i].draw(g);
+			shapes.add(rectangles[i]);
 		}
 	}
+
 }

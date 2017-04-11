@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import shape.*;
 
@@ -20,7 +22,7 @@ public class ShapeManager {
 
 	// Database credentials
 	static final String USER = "root";
-	static final String PASS = "David021 Erfan";
+	static final String PASS = "amir";
 
 	// ==============================================
 	/*
@@ -76,6 +78,60 @@ public class ShapeManager {
 		} // end try
 
 	}// end addLine
+
+	// ==============================================
+	/*
+	 * change color
+	 */
+	public static void changeColor(int idPerson, Shape shape) {
+		Connection conn = null;
+		Statement stmt = null;
+		
+		try {
+
+			// STEP 2: Register JDBC driver
+			Class.forName("com.mysql.jdbc.Driver");
+
+			// STEP 3: Open a connection
+			conn = DriverManager.getConnection(DB_URL, USER, PASS);
+
+			// STEP 4: Execute a query
+			stmt = conn.createStatement();
+
+			String sql = "UPDATE `Paint`.`Shapes` SET `Shapes.color`='" + colorToString(shape.getColor()) + "' WHERE "
+					+ " `x1` = '" + shape.getX1() + "' AND `y1` = '" + shape.getY1() + "' AND `x2` = '"
+					+ shape.getX2() + "' AND `y2` = '" + shape.getY2() + "' AND `shapeType` = '" + shape.getType() + "';";
+			
+			
+//			UPDATE `Paint`.`Shapes` SET `color`='Blue' WHERE `idShapes`='868';
+			stmt.executeUpdate(sql);
+
+		} catch (SQLException se) {
+			// Handle errors for JDBC
+			se.printStackTrace();
+		} catch (Exception e) {
+			// Handle errors for Class.forName
+			e.printStackTrace();
+		} finally {
+			// finally block used to close resources
+			try {
+				if (stmt != null)
+					stmt.close();
+			} catch (SQLException se2) {
+			} // nothing we can do
+			try {
+				if (conn != null)
+					conn.close();
+			} catch (SQLException se) {
+				se.printStackTrace();
+			} // end finally try
+
+		} // end try
+
+
+	}// end changeColor
+
+	
 
 	// ==============================================
 	/*
@@ -462,7 +518,7 @@ public class ShapeManager {
 
 	public static List<Shape> searchSelected(int x1, int y1, int x2, int y2, int idPerson) {
 		List<Shape> shapes = new ArrayList<>();
-		
+
 		Connection conn = null;
 		Statement stmt = null;
 		try {
@@ -491,7 +547,7 @@ public class ShapeManager {
 				Shape shape = new Shape(x1, x2, y1, y2, color, idPerson, shapeType);
 				shapes.add(shape);
 			}
-			
+
 		} catch (SQLException se) {
 			// Handle errors for JDBC
 			se.printStackTrace();

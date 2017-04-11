@@ -17,7 +17,6 @@ public class Shape extends JFrame {
 	public Shape() {
 	}
 
-	
 	public Shape(int x1, int x2, int y1, int y2, Color color, int idPerson, String shapeType) {
 		this.x1 = x1;
 		this.x2 = x2;
@@ -26,12 +25,6 @@ public class Shape extends JFrame {
 		this.color = color;
 		this.idPerson = idPerson;
 		this.shapeType = shapeType;
-	}
-	public Shape(int x1, int x2, int y1, int y2) {
-		this.x1 = x1;
-		this.x2 = x2;
-		this.y1 = y1;
-		this.y2 = y2;
 	}
 
 	// getter
@@ -97,6 +90,11 @@ public class Shape extends JFrame {
 	public  void draw(Graphics g){
 		
 	}
+	
+	public boolean containShape(double x, double y){
+		return true;
+	}
+	
 
 	// set coordiantes for draw in reverse direction
 	protected void setCoordinates() {
